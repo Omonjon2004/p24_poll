@@ -1,5 +1,8 @@
+from pickle import FALSE
+from random import choice
 from trace import Trace
 
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -8,21 +11,15 @@ from rest_framework.authentication import (BasicAuthentication,
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+
 
 from poll.models import Choice, Poll, Vote
 from poll.serializers import (ChoiceSerializer, PollPatchSerializer,
                               PollSerializer, VoteSerializer)
 
-"""
-CRUD
-Create
-Read
-Update- >   PUT -> obyekt yaratish uchun kerak boladigan hamma fiedlar berilishi kerak.
-            PATCH -> ozgartirilishi kerak bolgan fieldlar berilsa boldi.
-Delete
-"""
+
+
 
 
 # class PollsView(APIView):
@@ -90,6 +87,21 @@ class PollViewSet(ModelViewSet):
         serializer.save(author=self.request.user)
         super().perform_create(serializer)
 
+    @action(detail=True, methods=["get"], url_path='choices')
+    def choice(self, request, *args, **kwargs):
+        poll = self.get_object()
+        choices = poll.choices.all()
+        serialize = ChoiceSerializer(choices, many=True)
+        return Response(serialize.data)
+
+
+    @action(detail=False, methods=["get"], url_path='top-votes')
+    def vote(self, request, *args, **kwargs):
+        polls = Poll.objects.annotate(vote_count=Count('votes')).filter(vote_count__gte=3)
+        serialize = PollSerializer(polls, many=True)
+        return Response(serialize.data)
+
+
 
 class ChoiceViewSet(ModelViewSet):
     queryset = Choice.objects.all()
@@ -108,3 +120,5 @@ class ChoiceViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
+
+

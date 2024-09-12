@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import CASCADE, UniqueConstraint
+from django.db.models import CASCADE
 
 from account.models import Account
 
@@ -9,10 +9,16 @@ class Poll(models.Model):
     author = models.ForeignKey(Account, CASCADE, "polls")
     published = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.question
+
 
 class Choice(models.Model):
     answer = models.TextField()
     poll = models.ForeignKey(Poll, CASCADE, "choices")
+
+    def __str__(self):
+        return self.answer
 
 
 class Vote(models.Model):
@@ -25,4 +31,3 @@ class Vote(models.Model):
         unique_together = ("poll", "voted_by")
 
 
-# /        constraints = [UniqueConstraint(fields=["poll", "voted_by"], name="unique vote"), ]

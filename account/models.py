@@ -17,9 +17,7 @@ class AccountProfile(Model):
     passport_number = CharField(max_length=6, null=True, blank=True)
     passport_letter = CharField(max_length=2, null=True, blank=True)
     interests = ManyToManyField("Interest", "accounts")
-    #
-    # class Meta:
-    #     unique_together = ('passport_number', 'passport_letter')
+
 
 
 class Interest(Model):

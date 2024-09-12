@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer
 
 from account.models import Account, AccountProfile, Interest
@@ -9,7 +8,6 @@ class AccountSerializer(ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
 
-    # email = serializers.EmailField(required=True, allow_null=False)
     def validate(self, attrs):
         if attrs.get("password") != attrs.get("password2"):
             raise serializers.ValidationError("Passwords must be match")
@@ -26,12 +24,12 @@ class AccountSerializer(ModelSerializer):
         model = Account
         fields = (
             "id",
+            "first_name",
+            "last_name",
             "username",
             "email",
             "password",
             "password2",
-            "first_name",
-            "last_name",
             "phone",
         )
         extra_kwargs = {
@@ -54,17 +52,11 @@ class AccountProfileSerializer(ModelSerializer):
     passport_number = serializers.CharField(required=False)
     passport_letter = serializers.CharField(required=False)
 
-    # interests = serializers.PrimaryKeyRelatedField(queryset=Interest.objects.all(), many=True, )
-    # interests = InterestSerializer(many=True)
-
     class Meta:
         model = AccountProfile
         fields = ("city", "passport_number", "passport_letter", "interests")
         extra_kwargs = {
             "interests": {"required": False, "allow_null": True, "allow_empty": True},
-            # 'city': {'required': False, 'allow_null': True},
-            # 'passport_number': {'required': False, 'allow_null': True},
-            # 'passport_letter': {'required': False, 'allow_null': True},
         }
 
     def to_representation(self, instance: AccountProfile):
@@ -96,8 +88,7 @@ class AccountDetailSerializer(ModelSerializer):
             "profile": {"required": False, "allow_null": True},
         }
 
-    # def update(self, instance, validated_data):
-    #     return super().update(instance, validated_data)
+
 
     def update(self, instance, validated_data):
         profile = validated_data.pop("profile")
